@@ -17,6 +17,7 @@ import com.example.socialapp.InternetConnection;
 import com.example.socialapp.R;
 import com.example.socialapp.adapter.FavoriteAdapter;
 import com.example.socialapp.model.FavoriteModel;
+import com.example.socialapp.model.UserModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -43,6 +44,8 @@ public class FavoriteFragment extends Fragment {
 
     private FirebaseUser fUser;
     private DatabaseReference refFavorite;
+    String name;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,6 +54,21 @@ public class FavoriteFragment extends Fragment {
 
         ButterKnife.bind(this, view);
         initFirebse();
+        DatabaseReference refUser = FirebaseDatabase.getInstance().getReference("users");
+        refUser.orderByChild("email").equalTo(fUser.getEmail()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    UserModel userModel = ds.getValue(UserModel.class);
+                    name = userModel.getName();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         getFavorite();
 
@@ -83,7 +101,7 @@ public class FavoriteFragment extends Fragment {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     for(DataSnapshot ds1: ds.getChildren()){
                         FavoriteModel favorite = ds1.getValue(FavoriteModel.class);
-                        if(ds1.getKey().equals(fUser.getUid())){
+                        if(ds1.getKey().equals(name)){
                             favoriteList.add(favorite);
                         }
                     }

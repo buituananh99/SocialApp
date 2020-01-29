@@ -74,7 +74,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.MyView
             tvLastMessage = itemView.findViewById(R.id.tv_last_message);
 
             itemView.setOnClickListener(v -> {
-                Intent intent =new Intent(itemView.getContext(), ChatActivity.class);
+                Intent intent = new Intent(itemView.getContext(), ChatActivity.class);
                 UserModel user = userList.get(getAdapterPosition());
                 intent.putExtra("USER_EMAIL", user.getEmail());
                 intent.putExtra("USER_AVATAR", user.getAvatar());
@@ -90,28 +90,25 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.MyView
         }
 
 
-
     }
 
 
-
-
-
-    void lastMessage(int pos, TextView tvMessage){
+    void lastMessage(int pos, TextView tvMessage) {
         FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
         refChat = FirebaseDatabase.getInstance().getReference("chats");
         refChat.orderByChild("sender").equalTo(fUser.getEmail()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(!dataSnapshot.exists()){
+                if (!dataSnapshot.exists()) {
                     return;
                 }
 
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     MessageModel msg = ds.getValue(MessageModel.class);
-                    if(userList.size()==0) return;
-                    if(msg.getReceiver().equals(userList.get(pos).getEmail())){
+                    if (userList.size() == 0) return;
+
+                    if (msg.getReceiver().equals(userList.get(pos).getEmail())) {
                         lastMessage = msg.getMessage();
                     }
                 }

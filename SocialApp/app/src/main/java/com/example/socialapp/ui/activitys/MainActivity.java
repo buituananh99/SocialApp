@@ -1,6 +1,8 @@
 package com.example.socialapp.ui.activitys;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.widget.Toast;
 
 import com.example.socialapp.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -35,6 +37,25 @@ public class MainActivity extends AppCompatActivity  {
         //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
     }
 
+    boolean doubleBackToExitPressedOnce = false;
 
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Nhấn lần nữa để thoát", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
+    }
 
 }

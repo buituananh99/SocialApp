@@ -70,7 +70,7 @@ public class ProfileFragment extends Fragment {
     private DatabaseReference refPhoto;
     private DatabaseReference refUser;
     private List<PhotoModel> photoList;
-    private String email, currentUriAvatar;
+    private String email,name, currentUriAvatar;
 
     private PhotoAdapter adapter;
 
@@ -150,6 +150,7 @@ public class ProfileFragment extends Fragment {
                     Glide.with(getActivity()).load(user.getAvatar()).into(imgAvatar);
                     tvName.setText(user.getName());
                     currentUriAvatar = user.getAvatar();
+                    name = user.getName();
                     if (!user.getLiking().equals("")) {
                         tvLiking.setText(user.getLiking());
                     }
@@ -217,7 +218,6 @@ public class ProfileFragment extends Fragment {
         dialog.getWindow().getAttributes().gravity = Gravity.CENTER;
 
         imgAvatarUpdate = dialog.findViewById(R.id.img_avatar);
-        EditText edtName = dialog.findViewById(R.id.edt_name);
         EditText edtLiking = dialog.findViewById(R.id.edt_liking);
 
         ImageView imgButtonSave = dialog.findViewById(R.id.img_save_update);
@@ -230,11 +230,6 @@ public class ProfileFragment extends Fragment {
 
         imgButtonSave.setOnClickListener(v -> {
 
-            if(edtName.getText().toString().trim().length() < 6){
-                edtName.setError("");
-                edtName.requestFocus();
-                return;
-            }
 
             if(edtLiking.getText().toString().trim().length() < 3){
                 edtLiking.setError("");
@@ -242,20 +237,20 @@ public class ProfileFragment extends Fragment {
                 return;
             }
 
-            updateUser(edtName.getText().toString(), edtLiking.getText().toString(), dialog);
+            updateUser(name, edtLiking.getText().toString(), dialog);
         });
 
         imgAvatarUpdate.setOnClickListener(v -> {
             chooseImage();
         });
 
-        setUser(imgAvatarUpdate, edtName, edtLiking);
+        setUser(imgAvatarUpdate, edtLiking);
 
         dialog.create();
         dialog.show();
     }
 
-    void setUser(ImageView imgAvatar, EditText edtName, EditText edtLiking) {
+    void setUser(ImageView imgAvatar, EditText edtLiking) {
         DatabaseReference refUser = FirebaseDatabase.getInstance().getReference("users");
         refUser.orderByChild("email").equalTo(fUser.getEmail()).addValueEventListener(new ValueEventListener() {
             @Override
@@ -263,7 +258,7 @@ public class ProfileFragment extends Fragment {
                 for (DataSnapshot dsUser : dataSnapshot.getChildren()) {
                     UserModel user = dsUser.getValue(UserModel.class);
                     Glide.with(getActivity()).load(user.getAvatar()).into(imgAvatar);
-                    edtName.setText(user.getName());
+
                     edtLiking.setText(user.getLiking());
                 }
             }

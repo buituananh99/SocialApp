@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 import com.example.socialapp.InternetConnection;
 import com.example.socialapp.R;
 import com.example.socialapp.adapter.ExploreAdapter;
+import com.example.socialapp.model.FavoriteModel;
 import com.example.socialapp.model.UserModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -43,8 +45,10 @@ public class HomeFragment extends Fragment {
 
     private FirebaseAuth auth;
     private DatabaseReference refUser;
+    private DatabaseReference refUsers;
     private Dialog dialog;
 
+    private String nameCurrentUser;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -53,6 +57,23 @@ public class HomeFragment extends Fragment {
         ButterKnife.bind(this, view);
 
         initFirebase();
+
+        refUsers = FirebaseDatabase.getInstance().getReference("users");
+        refUsers.orderByChild("email").equalTo(auth.getCurrentUser().getEmail()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds: dataSnapshot.getChildren()){
+                    UserModel userModel = ds.getValue(UserModel.class);
+                    nameCurrentUser = userModel.getName();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         setViewPager2();
         return view;
     }
@@ -63,10 +84,9 @@ public class HomeFragment extends Fragment {
     }
 
 
-
     private void setViewPager2() {
 
-        if(!InternetConnection.isConnected(getActivity())){
+        if (!InternetConnection.isConnected(getActivity())) {
             InternetConnection.showDialogInternet(getActivity());
             return;
         }
@@ -75,6 +95,9 @@ public class HomeFragment extends Fragment {
         dialog.setTitle("Loading...");
 
         List<UserModel> userModelList = new ArrayList<>();
+
+        // current shin a
+        // shin a -> favorite shin c
 
         // TODO: GET USERS
         dialog.show();
@@ -86,20 +109,19 @@ public class HomeFragment extends Fragment {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     UserModel user = ds.getValue(UserModel.class);
 
-
-                    if(!ds.exists()) return;
-
                     if (!user.getEmail().equals(auth.getCurrentUser().getEmail())) {
 
-                        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("favorites").child(user.getId());
+                        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("favorites").child(user.getName());
+
                         reference.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
 
-                                if (!dataSnapshot.child(auth.getCurrentUser().getUid()).exists()) {
+                                if(!dataSnapshot.child(nameCurrentUser).exists()){
                                     userModelList.add(user);
                                     viewPager.setAdapter(new ExploreAdapter(userModelList, viewPager));
+
                                 }
 
                                 dialog.dismiss();

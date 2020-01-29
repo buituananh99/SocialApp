@@ -72,7 +72,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
         setScaleAnimation(holder.itemView);
 
 
-
     }
 
     @Override
@@ -100,7 +99,24 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
 
                 UserModel user = userModelList.get(getAdapterPosition());
 
-                saveFavorite(user.getId(), fUser.getUid(), user.getName(), user.getEmail(), user.getAvatar(), getAdapterPosition());
+                DatabaseReference fuser = FirebaseDatabase.getInstance().getReference("users");
+
+                fuser.orderByChild("email").equalTo(fUser.getCurrentUser().getEmail()).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                            UserModel userModel = ds.getValue(UserModel.class);
+                            saveFavorite(user.getId(), userModel.getName(), user.getName(), user.getEmail(), user.getAvatar(), getAdapterPosition());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
             });
 
             imgClose.setOnClickListener(v -> {
@@ -136,7 +152,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
         favorite.setName(name);
         favorite.setEmail(email);
 
-        refFavorite.child(userId).child(userFavorite).setValue(favorite);
+        refFavorite.child(name).child(userFavorite).setValue(favorite);
 
         removeAt(pos);
     }
